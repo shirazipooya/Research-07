@@ -136,7 +136,6 @@ find_meteorological_sites <- function(lat = NA,
                                                             paste("Lon =", lon),
                                                             sep = "<br/>"))
           }
-          
           print(m)
      }
      
