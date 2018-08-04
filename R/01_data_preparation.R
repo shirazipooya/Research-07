@@ -8,6 +8,8 @@ rm(list = ls())
 # Load Libraries:
 library(dplyr)      # a grammar of data manipulation
 library(GSODR)      # global surface summary of the day (GSOD) weather data from R
+library(openair)    # tools for the analysis of air pollution data
+library(leaflet)    # create interactive web maps with the JavaScript 'Leaflet' library
 
 # Load Functions:
 source(file = "R/_updateISD.R")
