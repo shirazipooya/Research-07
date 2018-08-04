@@ -21,8 +21,8 @@ source(file = "./R/_find_air_quality_sites.R")
 # Step 01: Meteorology Data -----------------------------------------------------------------------------
 
 # 01-01 find ISD site code: United States - Arizona - Phoenix
-phoenix_met_site <- find_meteorological_sites(lat = +033.4484,
-                                              lon = -112.0740,
+phoenix_met_site <- find_meteorological_sites(lat = 32.7157,
+                                              lon = -117.1611,
                                               n = 9,
                                               end.year = "current",
                                               plot = TRUE,
@@ -86,12 +86,13 @@ saveRDS(object = phoenix_data,
 # Step 02: Air Quality Data -----------------------------------------------------------------------------
 
 # 01-02 find air quality site code: United States - Arizona - Phoenix
+# c(42101,44201,42602,42401,81102,88101,88501,88502)
 phoenix_air_quality_site <- find_air_quality_sites(lat = +033.4484,
                                                    lon = -112.0740,
                                                    n = 20,
                                                    state = NA,
                                                    end.year = 2017:2018,
-                                                   parameter = c(42101,44201,42602,42401,81102,88101,88501,88502),
+                                                   parameter = NULL,
                                                    plot = TRUE,
                                                    returnMap = FALSE)
 
