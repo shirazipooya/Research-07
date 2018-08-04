@@ -1,5 +1,6 @@
 
-# Step 00: Requirements -----------------------------------------------------------------------
+
+# Step 00: Requirements ---------------------------------------------------------------------------------
 
 # Remove All Objects From Environment:
 rm(list = ls())
@@ -13,7 +14,7 @@ source(file = "R/_updateISD.R")
 source(file = "R/_find_meteorological_sites.R")
 source(file = "R/_daily_met_data_cleansing.R")
 
-# Step 01: Meteorology Data -------------------------------------------------------------------
+# Step 01: Meteorology Data -----------------------------------------------------------------------------
 
 # 01-01 find ISD site code: United States - Arizona - Phoenix
 phoenix_met_site <- find_meteorological_sites(lat = +033.4484,
@@ -32,8 +33,8 @@ phoenix_met_data <- phoenix_met_data %>%
      select(YEARMODA, STNID, LAT, LON, ELEV_M, TEMP, DEWP, SLP,
             STP, VISIB, WDSP, MXSPD, MAX, MIN, PRCP, EA, ES, RH)
 
-colnames(phoenix_met_data) <- c("date", "site", "lat", "lon", "elev", "tmean", "dp", "slp",
-                                "stp", "visib", "ws", "ws_max", "tmax", "tmin", "prec", "ea", "es", "rh")
+colnames(phoenix_met_data) <- c("date", "site", "lat", "lon", "elev", "tmean", "dp", "slp", "stp",
+                                "visib", "ws", "ws_max", "tmax", "tmin", "prec", "ea", "es", "rh")
 
 phoenix_sites <- unique(phoenix_met_data$site)
 
@@ -78,6 +79,7 @@ for (i in phoenix_sites)
 saveRDS(object = phoenix_data,
         file = "data/met/phoenix_data.RDS")
 
-# Step 02: Air Quality Data -------------------------------------------------------------------
+# Step 02: Air Quality Data -----------------------------------------------------------------------------
+
 
 
