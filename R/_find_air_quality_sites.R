@@ -8,7 +8,8 @@ find_air_quality_sites <- function(lat = NA,
                                    end.year = 2017:2018,
                                    plot = TRUE,
                                    returnMap = FALSE,
-                                   parameter = c(42101,44201,42602,42401,81102,88101,88501,88502))
+                                   parameter = c(42101,44201,42602,42401,81102,88101,88501,88502),
+                                   map = NA)
 {
         
         # Step 01: Find Site
@@ -188,8 +189,21 @@ find_air_quality_sites <- function(lat = NA,
         
         dat <- left_join(x = num_parameter, y = aqs_sites, by = "Code")
         
+        if (!is.na(map))
+        {
+                m <- map
+        }
+        
         if (plot)
         {
+                icon <- makeIcon(iconUrl = "data/",
+                        iconWidth = 38, iconHeight = 95,
+                        iconAnchorX = 22, iconAnchorY = 94,
+                        shadowUrl = "http://leafletjs.com/examples/custom-icons/leaf-shadow.png",
+                        shadowWidth = 50, shadowHeight = 64,
+                        shadowAnchorX = 4, shadowAnchorY = 62
+                )
+                
                 if (!"dist" %in% names(x = dat))
                 {
                         dat$dist <- NA
@@ -210,7 +224,7 @@ find_air_quality_sites <- function(lat = NA,
                         leaflet::addProviderTiles(provider = leaflet::providers$Stamen.Terrain) %>% 
                         leaflet::addMarkers(lng = ~ Longitude,
                                             lat = ~ Latitude,
-                                            popup = content)
+                                            popup = content,)
                 
                 if (!is.na(x = lat) && !is.na(x = lon)) 
                 {

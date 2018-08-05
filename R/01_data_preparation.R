@@ -21,12 +21,19 @@ source(file = "./R/_find_air_quality_sites.R")
 # Step 01: Meteorology Data -----------------------------------------------------------------------------
 
 # 01-01 find ISD site code: United States - Arizona - Phoenix
-phoenix_met_site <- find_meteorological_sites(lat = 32.7157,
-                                              lon = -117.1611,
-                                              n = 9,
+phoenix_met_site <- find_meteorological_sites(lat = +033.4484,
+                                              lon = -112.0740,
+                                              n = 7,
                                               end.year = "current",
                                               plot = TRUE,
                                               returnMap = FALSE)
+
+phoenix_met_map <- find_meteorological_sites(lat = +033.4484,
+                                             lon = -112.0740,
+                                             n = 7,
+                                             end.year = "current",
+                                             plot = TRUE,
+                                             returnMap = TRUE)
 
 # 01-02 Import Meteorology Data:
 phoenix_met_data <- GSODR::get_GSOD(years = 2010:2017,
