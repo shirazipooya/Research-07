@@ -1,24 +1,20 @@
-rm(list = ls())
-graphics.off()
 
-library(tidyverse)
-library(lubridate)
-library(data.table)
-library(openair)
+# Download US Air Quality Data
 
-air_data_us <- function(period = "daily",
-                        year = 2016,
-                        criteria_gases = TRUE,
-                        particulates = TRUE,
-                        toxics_precursors_lead = FALSE,
-                        meteorological = FALSE)
+Download_AirQualityData <- function(period = "daily",
+                                    year = 2014:2016,
+                                    site = c("06-037-5005"),
+                                    criteria_gases = TRUE,
+                                    particulates = TRUE,
+                                    toxics_precursors_lead = FALSE,
+                                    meteorological = FALSE)
 {
      # pollutant
      pollutant <- c()
      
+     # Criteria Gases
      if (criteria_gases)
      {
-          # Criteria Gases
           CG <- c("Ozone" = "44201",
                   "SO2" = "42401",
                   "CO" = "42101",
@@ -26,19 +22,19 @@ air_data_us <- function(period = "daily",
           
           pollutant <- c(pollutant, CG)
      }
-
+     
+     # Particulates
      if (particulates)
      {
-          # Particulates
           P <- c("PM10_Mass" = "81102",
                  "PM2.5_Mass" = "88101")
           
           pollutant <- c(pollutant, P)
      }
-
+     
+     # Toxics, Precursors, and Lead
      if (toxics_precursors_lead)
      {
-          # Toxics, Precursors, and Lead
           TPL <- c("HAPS" = "HAPS",
                    "VOCS" = "VOCS",
                    "NONOxNOy" = "NONOxNOy",
@@ -46,10 +42,10 @@ air_data_us <- function(period = "daily",
           
           pollutant <- c(pollutant, TPL)
      }
-
+     
+     # Meteorological
      if (meteorological)
      {
-          # Meteorological
           M <- c("Winds" = "WIND",
                  "Temperature" = "TEMP",
                  "Pressure" = "PRESS",
@@ -73,10 +69,9 @@ getAirData <- function(period,
                        year,
                        pollutant)
 {
+     url <- "http://aqs.epa.gov/aqsweb/airdata/"
      
      file_name <- paste(period, "_", pollutant[1], "_", year, ".zip", sep = "")
-     
-     url <- "https://aqs.epa.gov/aqsweb/airdata/"
      
      download_link <- paste(url, file_name, sep = "")
      
