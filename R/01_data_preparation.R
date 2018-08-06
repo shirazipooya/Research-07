@@ -6,11 +6,11 @@ rm(list = ls())
 
 # Load Libraries:
 library(dplyr)      # a grammar of data manipulation
-library(GSODR)      # global surface summary of the day (GSOD) weather data from R
-library(openair)    # tools for the analysis of air pollution data
-library(leaflet)    # create interactive web maps with the JavaScript "Leaflet" library
-library(readr)      # read rectangular text data
-library(data.table) # extension of "data.frame"
+# library(GSODR)      # global surface summary of the day (GSOD) weather data from R
+# library(openair)    # tools for the analysis of air pollution data
+# library(leaflet)    # create interactive web maps with the JavaScript "Leaflet" library
+# library(readr)      # read rectangular text data
+# library(data.table) # extension of "data.frame"
 
 # Load Functions:
 source(file = "./R/_updateISD.R")
@@ -18,15 +18,25 @@ source(file = "./R/_find_meteorological_sites.R")
 source(file = "./R/_daily_met_data_cleansing.R")
 source(file = "./R/_find_air_quality_sites.R")
 
+lat = +034.0522
+lon = -118.2437
+
 # Step 01: Meteorology Data -----------------------------------------------------------------------------
 
 # 01-01 find ISD site code: United States - Arizona - Phoenix
-phoenix_met_site <- find_meteorological_sites(lat = 32.7157,
-                                              lon = -117.1611,
-                                              n = 9,
+phoenix_met_site <- find_meteorological_sites(lat = lat,
+                                              lon = lon,
+                                              n = 20,
                                               end.year = "current",
-                                              plot = TRUE,
+                                              plot = FALSE,
                                               returnMap = FALSE)
+
+phoenix_met_map <- find_meteorological_sites(lat = lat,
+                                             lon = lon,
+                                             n = 20,
+                                             end.year = "current",
+                                             plot = TRUE,
+                                             returnMap = TRUE)
 
 # 01-02 Import Meteorology Data:
 phoenix_met_data <- GSODR::get_GSOD(years = 2010:2017,
@@ -86,13 +96,15 @@ saveRDS(object = phoenix_data,
 # Step 02: Air Quality Data -----------------------------------------------------------------------------
 
 # 01-02 find air quality site code: United States - Arizona - Phoenix
-# c(42101,44201,42602,42401,81102,88101,88501,88502)
-phoenix_air_quality_site <- find_air_quality_sites(lat = +033.4484,
-                                                   lon = -112.0740,
+# c(81102,88101,42401,42602,44201,42101)
+phoenix_air_quality_site <- find_air_quality_sites(lat = lat,
+                                                   lon = lon,
                                                    n = 20,
                                                    state = NA,
                                                    end.year = 2017:2018,
-                                                   parameter = NULL,
+                                                   parameter = c(81102,42401,42602,44201,42101),
+                                                   num_para = 5,
                                                    plot = TRUE,
-                                                   returnMap = FALSE)
+                                                   returnMap = FALSE,
+                                                   map = phoenix_met_map)
 
