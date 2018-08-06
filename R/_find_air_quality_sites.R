@@ -8,8 +8,9 @@ find_air_quality_sites <- function(lat = NA,
                                    end.year = 2017:2018,
                                    plot = TRUE,
                                    returnMap = FALSE,
-                                   parameter = c(42101,44201,42602,42401,81102,88101,88501,88502),
-                                   map = NA)
+                                   parameter = c(81102,88101,42401,42602,44201,42101),
+                                   num_para = 6,
+                                   map = NULL)
 {
         
         # Step 01: Find Site
@@ -80,57 +81,8 @@ find_air_quality_sites <- function(lat = NA,
                 end.year <- 1900:2100
         }
         
-        # Search Based On State Codes:
-        if (!is.na(state))
-        {
-                # Search For State:
-                id <- which(x = toupper(aqs_sites$`State Name`) %in% toupper(x = state))
-                aqs_sites <- aqs_sites[id, ]
-        }
-        
-        # Make Sure No Missing Lon:
-        id <- which(x = is.na(x = aqs_sites$Longitude))
-        if (length(x = id) > 0)
-        {
-                aqs_sites <- aqs_sites[-id, ]
-        }
-        
-        # Make Sure No Missing Lat:
-        id <- which(x = is.na(x = aqs_sites$Latitude))
-        if (length(x = id) > 0)
-        {
-                aqs_sites <- aqs_sites[-id, ]
-        }
-        
-        # Filter By End Year:
-        id <- which(x = format(x = aqs_sites$`Site Closed Date`, "%Y") %in% end.year)
-        aqs_sites <- aqs_sites[id, ]
-        
-        # Approximate Distance To Site:
-        if (!missing(x = lat) && !missing(x = lon))
-        {
-                # Radius Of The Earth:
-                r <- 6371
-                
-                # Coordinates Need To Be In Radians:
-                aqs_sites$longR <- aqs_sites$Longitude * pi / 180
-                aqs_sites$latR <- aqs_sites$Latitude * pi / 180
-                
-                LON <- lon * pi / 180
-                LAT <- lat * pi / 180
-                
-                # Calclate Distance:
-                aqs_sites$dist <- acos(x = sin(x = LAT) * sin(x = aqs_sites$latR) + cos(x = LAT) *
-                                               cos(x = aqs_sites$latR) * cos(x = aqs_sites$longR - LON)) * r
-                
-                # Sort And Retrun Top N Nearest:
-                aqs_sites <- head(x = openair:::sortDataFrame(x = aqs_sites,
-                                                              key = "dist"),
-                                  n = n)
-        }
-        
         # Step 02: Find Monitors
-
+        
         # url for monitors file
         aqs_monitors_url <- "https://aqs.epa.gov/aqsweb/airdata/aqs_monitors.zip"
         
@@ -152,10 +104,10 @@ find_air_quality_sites <- function(lat = NA,
         
         # read aqs_sites.csv file
         aqs_monitors <- data.table::fread(file = unzip(zipfile = temp_file,
-                                                    files = "aqs_monitors.csv",
-                                                    exdir = temp_dir),
-                                       header = TRUE,
-                                       fill = TRUE)
+                                                       files = "aqs_monitors.csv",
+                                                       exdir = temp_dir),
+                                          header = TRUE,
+                                          fill = TRUE)
         
         # unlink(x = temp_dir, recursive = TRUE)
         
@@ -172,12 +124,38 @@ find_air_quality_sites <- function(lat = NA,
         aqs_monitors <- aqs_monitors %>%
                 filter(Code %in% aqs_sites$Code)
         
-        # Step 03: plot
+        # Step 03: Join Sites and Monitors
         
         aqs <- left_join(x = aqs_monitors, y = aqs_sites, by = "Code") %>% 
                 select(`State Name`, `County Name`, `City Name`, Code, `Parameter Name`, `Parameter Code`,
-                       `Site Established Date`, `Site Closed Date`, Latitude, Longitude, Elevation, dist) %>% 
+                       `Site Established Date`, `Site Closed Date`, Latitude, Longitude, Elevation) %>% 
                 distinct()
+        
+        # Search Based On State Codes:
+        if (!is.na(state))
+        {
+                # Search For State:
+                id <- which(x = toupper(aqs$`State Name`) %in% toupper(x = state))
+                aqs <- aqs[id, ]
+        }
+        
+        # Make Sure No Missing Lon:
+        id <- which(x = is.na(x = aqs$Longitude))
+        if (length(x = id) > 0)
+        {
+                aqs <- aqs[-id, ]
+        }
+        
+        # Make Sure No Missing Lat:
+        id <- which(x = is.na(x = aqs$Latitude))
+        if (length(x = id) > 0)
+        {
+                aqs <- aqs[-id, ]
+        }
+        
+        # Filter By End Year:
+        id <- which(x = format(x = aqs$`Site Closed Date`, "%Y") %in% end.year)
+        aqs <- aqs[id, ]
         
         # select parameter
         if (!is.null(parameter))
@@ -185,23 +163,46 @@ find_air_quality_sites <- function(lat = NA,
                 aqs <- aqs %>% filter(`Parameter Code` %in% parameter)
         }
         
-        num_parameter <- aqs %>% group_by(Code) %>% summarise(n()) %>% filter(`n()` >= 4)
+        num_parameter <- aqs %>% group_by(Code) %>% summarise(n()) %>% filter(`n()` >= num_para)
         
         dat <- left_join(x = num_parameter, y = aqs_sites, by = "Code")
         
-        if (!is.na(map))
+        
+        # Approximate Distance To Site:
+        if (!missing(x = lat) && !missing(x = lon))
+        {
+                # Radius Of The Earth:
+                r <- 6371
+                
+                # Coordinates Need To Be In Radians:
+                dat$longR <- dat$Longitude * pi / 180
+                dat$latR <- dat$Latitude * pi / 180
+                
+                LON <- lon * pi / 180
+                LAT <- lat * pi / 180
+                
+                # Calclate Distance:
+                dat$dist <- acos(x = sin(x = LAT) * sin(x = dat$latR) + cos(x = LAT) *
+                                         cos(x = dat$latR) * cos(x = dat$longR - LON)) * r
+                
+                # Sort And Retrun Top N Nearest:
+                dat <- head(x = openair:::sortDataFrame(x = dat,
+                                                        key = "dist"),
+                            n = n)
+        }
+        
+        # Step 03: plot
+        
+        if (!is.null(map))
         {
                 m <- map
         }
         
         if (plot)
         {
-                icon <- makeIcon(iconUrl = "data/",
-                        iconWidth = 38, iconHeight = 95,
-                        iconAnchorX = 22, iconAnchorY = 94,
-                        shadowUrl = "http://leafletjs.com/examples/custom-icons/leaf-shadow.png",
-                        shadowWidth = 50, shadowHeight = 64,
-                        shadowAnchorX = 4, shadowAnchorY = 62
+                icon <- leaflet::makeIcon(iconUrl = "data/map_marker/Map_Marker_Green.png",
+                                          iconWidth = 40, iconHeight = 40,
+                                          iconAnchorX = 20, iconAnchorY = 40,
                 )
                 
                 if (!"dist" %in% names(x = dat))
@@ -220,11 +221,11 @@ find_air_quality_sites <- function(lat = NA,
                                  paste("Distance (km)", round(dat$dist, 1)),
                                  sep = "<br/>")
                 
-                m <- leaflet::leaflet(data = dat) %>%
-                        leaflet::addProviderTiles(provider = leaflet::providers$Stamen.Terrain) %>% 
-                        leaflet::addMarkers(lng = ~ Longitude,
-                                            lat = ~ Latitude,
-                                            popup = content,)
+                m <- m %>% leaflet::addMarkers(data = dat,
+                                               icon = icon,
+                                               lng = ~ Longitude,
+                                               lat = ~ Latitude,
+                                               popup = content,)
                 
                 if (!is.na(x = lat) && !is.na(x = lon)) 
                 {
