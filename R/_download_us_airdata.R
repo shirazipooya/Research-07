@@ -69,7 +69,7 @@ getAirData <- function(period,
                        year,
                        pollutant)
 {
-     url <- "http://aqs.epa.gov/aqsweb/airdata/"
+     url <- "https://aqs.epa.gov/aqsweb/airdata/"
      
      file_name <- paste(period, "_", pollutant[1], "_", year, ".zip", sep = "")
      
@@ -91,7 +91,7 @@ getAirData <- function(period,
           return()
      }
      
-     data_temp <- fread(file = unzip(zipfile = tmp,
+     data_temp <- data.table::fread(file = unzip(zipfile = tmp,
                                      files = paste(period, "_", pollutant[1], "_", year, ".csv", sep = ""),
                                      exdir = temp),
                         header = TRUE,
